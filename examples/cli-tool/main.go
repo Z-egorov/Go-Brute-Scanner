@@ -15,7 +15,6 @@ import (
 )
 
 func main() {
-	// Парсим аргументы командной строки
 	var (
 		url        = flag.String("url", "", "Target URL (required)")
 		workers    = flag.Int("workers", 10, "Number of concurrent workers")
@@ -34,7 +33,6 @@ func main() {
 
 	flag.Parse()
 
-	// Проверяем обязательные параметры
 	if *url == "" {
 		fmt.Println("Error: URL is required")
 		fmt.Println("Usage:")
@@ -46,7 +44,6 @@ func main() {
 		printBanner()
 	}
 
-	// Настраиваем сканер
 	opts := []scanner.Option{
 		scanner.WithTimeout(time.Duration(*timeout) * time.Second),
 		scanner.WithWorkers(*workers),
@@ -54,7 +51,6 @@ func main() {
 		scanner.WithUserAgent("GoBruteScanner-CLI/1.0"),
 	}
 
-	// Добавляем прокси если есть
 	if *proxies != "" {
 		proxyURLs := loadLinesFromFile(*proxies)
 		if len(proxyURLs) > 0 {
@@ -66,7 +62,6 @@ func main() {
 		}
 	}
 
-	// Создаем сканер
 	s, err := scanner.New(*url, opts...)
 	if err != nil {
 		fmt.Printf("❌ Failed to create scanner: %v\n", err)
@@ -77,7 +72,6 @@ func main() {
 
 	var allResults []types.ScanResult
 
-	// Фаза 1: Автообнаружение
 	if *discover {
 		if !*quiet {
 			fmt.Println("\n[1/2] 🔍 Auto-discovery phase")
@@ -93,13 +87,11 @@ func main() {
 		}
 	}
 
-	// Фаза 2: Брутфорс
 	if *brute {
 		if !*quiet {
 			fmt.Println("\n[2/2] ⚡ Brute force phase")
 		}
 
-		// Загружаем словарь
 		var wordlistItems []string
 		if *wordlist != "" {
 			wordlistItems = loadLinesFromFile(*wordlist)
@@ -114,7 +106,6 @@ func main() {
 			}
 		}
 
-		// Парсим методы
 		methodList := strings.Split(*methods, ",")
 		for i := range methodList {
 			methodList[i] = strings.TrimSpace(strings.ToUpper(methodList[i]))
@@ -126,7 +117,6 @@ func main() {
 			fmt.Println("   Scanning...")
 		}
 
-		// Запускаем сканирование
 		results, err := s.ScanWithWordlist(
 			ctx,
 			wordlistItems,
@@ -146,12 +136,10 @@ func main() {
 		}
 	}
 
-	// Анализ результатов
 	if !*quiet {
 		fmt.Println("\n📊 Results Analysis")
 	}
 
-	// Группируем по статус кодам
 	statusCounts := make(map[int]int)
 	var successful []types.ScanResult
 
@@ -162,7 +150,6 @@ func main() {
 		}
 	}
 
-	// Выводим статистику
 	if !*quiet {
 		fmt.Println("\nStatus Code Summary:")
 		for code, count := range statusCounts {
@@ -194,13 +181,11 @@ func main() {
 				result.StatusCode, result.Method, result.URL, result.Size)
 		}
 	} else {
-		// Quiet mode - только список успешных эндпоинтов
 		for _, result := range successful {
 			fmt.Printf("%s %s [%d]\n", result.Method, result.URL, result.StatusCode)
 		}
 	}
 
-	// Экспорт результатов
 	if *outputFile != "" {
 		exportResults(allResults, *outputFile, *format)
 		if !*quiet {
@@ -208,7 +193,6 @@ func main() {
 		}
 	}
 
-	// Итоговая статистика
 	if !*quiet {
 		stats := s.GetStats()
 		fmt.Println("\n📈 Final Statistics:")
@@ -223,7 +207,6 @@ func main() {
 	}
 }
 
-// printBanner выводит баннер
 func printBanner() {
 	fmt.Println(`
 ╔══════════════════════════════════════════╗
@@ -233,7 +216,6 @@ func printBanner() {
 	fmt.Println()
 }
 
-// loadLinesFromFile загружает строки из файла
 func loadLinesFromFile(filename string) []string {
 	content, err := os.ReadFile(filename)
 	if err != nil {
@@ -251,19 +233,16 @@ func loadLinesFromFile(filename string) []string {
 	return result
 }
 
-// exportResults экспортирует результаты в файл
 func exportResults(results []types.ScanResult, filename, format string) {
 	var formatter output.Formatter
 	var data string
 	var err error
 
-	// Преобразуем результаты в interface{}
 	var interfaceResults []interface{}
 	for _, r := range results {
 		interfaceResults = append(interfaceResults, r)
 	}
 
-	// Выбираем форматтер
 	switch strings.ToLower(format) {
 	case "json":
 		formatter = &output.JSONFormatter{Pretty: true}
@@ -281,7 +260,6 @@ func exportResults(results []types.ScanResult, filename, format string) {
 		return
 	}
 
-	// Сохраняем в файл
 	file, err := os.Create(filename)
 	if err != nil {
 		fmt.Printf("Warning: Failed to create file: %v\n", err)

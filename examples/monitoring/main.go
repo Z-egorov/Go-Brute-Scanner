@@ -13,15 +13,13 @@ func main() {
 	fmt.Println("=== Go Brute Scanner - Continuous Monitoring ===")
 	fmt.Println("Monitoring API endpoints for real-time updates...")
 
-	// Целевые эндпоинты для мониторинга
 	endpointsToMonitor := []string{
 		"/api/health",
 		"/api/status",
 		"/api/metrics",
-		"/api/coefficient", // Пример ручки с обновлениями в реальном времени
+		"/api/coefficient",
 	}
 
-	// Создаем сканер
 	s, err := scanner.New(
 		"http://localhost:8080",
 		scanner.WithTimeout(5*time.Second),
@@ -33,7 +31,6 @@ func main() {
 
 	ctx := context.Background()
 
-	// Начальное сканирование
 	fmt.Println("\nInitial scan:")
 	initialResults := make(map[string]types.ScanResult)
 
@@ -53,16 +50,14 @@ func main() {
 		}
 	}
 
-	// Цикл мониторинга
 	fmt.Println("\nStarting continuous monitoring (Ctrl+C to stop)...")
 	fmt.Println("Press Enter to stop...")
 
-	ticker := time.NewTicker(30 * time.Second) // Проверка каждые 30 секунд
+	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
 	stop := make(chan bool)
 
-	// Горутина для обработки ввода
 	go func() {
 		fmt.Scanln()
 		stop <- true
@@ -91,7 +86,6 @@ monitoringLoop:
 				if len(results) > 0 {
 					current := results[0]
 
-					// Проверяем изменения
 					if initial, exists := initialResults[endpoint]; exists {
 						if current.StatusCode != initial.StatusCode {
 							fmt.Printf("  ⚠️ %s: Status changed %d → %d\n",
@@ -106,9 +100,7 @@ monitoringLoop:
 							initialResults[endpoint] = current
 						}
 
-						// Для коэффициента парсим JSON
 						if endpoint == "/api/coefficient" && current.Size > 0 {
-							// Здесь можно добавить парсинг JSON и проверку значения
 							fmt.Printf("  🔄 %s: Updated (%d bytes)\n", endpoint, current.Size)
 						}
 					} else {
