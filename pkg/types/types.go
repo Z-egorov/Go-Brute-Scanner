@@ -28,6 +28,7 @@ type ScanResult struct {
 	Method     string            `json:"method"`
 	StatusCode int               `json:"status_code"`
 	Size       int               `json:"size"`
+	Body       string            `json:"body,omitempty"`
 	Headers    map[string]string `json:"headers,omitempty"`
 	Title      string            `json:"title,omitempty"`
 	FoundVia   string            `json:"found_via"`
@@ -82,6 +83,7 @@ type BruteResult struct {
 	Method     string            `json:"method"`
 	StatusCode int               `json:"status_code"`
 	Size       int               `json:"size"`
+	Body       string            `json:"body,omitempty"`
 	Headers    map[string]string `json:"headers,omitempty"`
 	Title      string            `json:"title,omitempty"`
 	Timestamp  time.Time         `json:"timestamp"`

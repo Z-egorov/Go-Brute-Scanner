@@ -144,6 +144,7 @@ func (s *scannerImpl) testEndpoint(ctx context.Context, url, method string) type
 		return result
 	}
 
+	result.Body = string(body)
 	result.Size = len(body)
 
 	if strings.Contains(resp.Header.Get("Content-Type"), "text/html") {
